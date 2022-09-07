@@ -10,25 +10,10 @@ from tabulate import tabulate
 from datetime import date
 from os.path import exists
 
-# Prepare global variables
-mode = 'prod'
-maxUserRequested = 200
-root = os.path.abspath(os.path.dirname(__file__))
-session_path = os.path.join(root, 'data/session.txt')
-histo_path = None
-user_list_path = None
 
-# Check arguments
-parser = argparse.ArgumentParser()
-parser.add_argument('-u', '--username', help="Instagram username to get data", required=True)
-parser.add_argument('-s', '--sessionid', help="Id sessions of Instagram web session", required=False)
-parser.add_argument('-m', '--mode', help="Can be 'debug' or 'prod', for show warning messages", required=False)
-
-args = parser.parse_args()
-
-# Check args
-if args.mode is not None:
-    mode = args.mode
+########################
+# FUNCTIONS
+########################
 
 
 # Define fies paths
@@ -315,12 +300,12 @@ def main():
     print('\nIn progress...')
 
     # Get followers list
-    if mode == 'debug': print('Get followers...')
+    print('Get followers...')
     followers = callFollowers('followers')
     followers = [d['username'] for d in followers]
 
     # Get following list
-    if mode == 'debug': print('Get followings...')
+    print('Get followings...')
     followings = callFollowers('following')
     followings = [d['username'] for d in followings]
 
@@ -330,7 +315,7 @@ def main():
              'Please make sure that the sessionid corresponds to the username provided.')
 
     # Get saved user list, for compare if there is missing users in followers and followings
-    if mode == 'debug': print('Get saved users...')
+    print('Get saved users...')
     saved_users = getUserList()
 
     # Merge the two arrays, + saved user list, and remove double data
@@ -342,7 +327,8 @@ def main():
     # Prepare data to save, in histo file
     data_to_save = []
 
-    if mode == 'debug': print('Prepare data to show...')
+    print('Prepare data to show...')
+
     for username in merged_array:
 
         # Add user in user list file, if it not already exist
@@ -416,3 +402,35 @@ def main():
     print(f'Total users you don\'t follow :         \u001b[33m{len(users_i_dont_follow)}\u001b[0m')
 
     print('-' * 45)
+
+
+########################
+# EXECUTION
+########################
+
+
+# /!\ DON'T MODIFY THESES VARIABLES /!\
+# They are automatically setted during the script
+histo_data = None
+root = os.path.abspath(os.path.dirname(__file__))
+histo_path = None
+user_list_path = None
+
+# Others variables (you can change theses if you want)
+show_log = True
+session_path = os.path.join(root, 'data/session.txt')
+
+# Check arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('-u', '--username', help="Instagram username to get data", required=True)
+parser.add_argument('-s', '--sessionid', help="Id sessions of Instagram web session", required=False)
+parser.add_argument('-l', '--showlog', help="Can be 'true' or 'false', for show log messages", required=False)
+
+args = parser.parse_args()
+
+# Check args
+if args.showlog is not None:
+    if args.showlog == "true" or args.showlog == "True":
+        show_log = True
+    else:
+        show_log = False
