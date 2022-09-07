@@ -1,0 +1,10 @@
+# Project files
+project/*.txt
+
+# Python files
+build
+dist
+*.egg-info
+
+# PyCharm files
+.idea
