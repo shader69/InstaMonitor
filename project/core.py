@@ -132,25 +132,60 @@ def callFollowers(userType):
     else:
         exit(f'Error: unrecognized user type "{userType}"')
 
-    # Check 'get' request
-    api = requests.get(
-        url,
-        headers=headers,
-        cookies=cookies
-    )
+    # Prepare data to return
+    users_data = []
+
     try:
-        # Catch HTTP errors
-        if api.status_code != 200:
-            exit(f'Error: called URL return {api.status_code} error')
 
-        # Check if result is null
-        elif len(api.json()["users"]) == 0:
-            print(f'\u001b[33mWARNING: this user has no {userType}, or we are unable to get them.')
-            print(f'    Please make sure that the sessionid corresponds to the username provided.\u001b[0m')
+        # Prepare to loop for query call
+        calling_count = 0
+        continue_loop = True
+        next_max_id = None
 
-        # Else, save session id and return correct result
+        while continue_loop:
+
+            if show_log: print(f'\u001b[33m   Call {userType} page n°{calling_count}   \u001b[0m')
+
+            calling_count = calling_count+1
+
+            # Get more users if necessary
+            if next_max_id is not None:
+                current_url = url + '&max_id=' + next_max_id
+            else:
+                current_url = url
+
+            # Check 'get' request
+            api = requests.get(
+                url=current_url,
+                headers=headers,
+                cookies=cookies
+            )
+
+            # Catch HTTP errors
+            if api.status_code != 200:
+                exit(f'Error: called URL return {api.status_code} error')
+
+            # Check if result is null
+            elif len(api.json()["users"]) == 0:
+                print(f'\u001b[33mWARNING: this user has no {userType}, or we are unable to get them.')
+                print(f'    Please make sure that the sessionid corresponds to the username provided.\u001b[0m')
+
+            # Merge user list
+            users_data.extend(api.json()["users"])
+
+            # If there is more users
+            if "next_max_id" not in api.json() or calling_count == 10:
+                continue_loop = False
+            elif "next_max_id" in api.json():
+                next_max_id = api.json()["next_max_id"]
+
+        # Save session id, because maybe it's work
         saveSessionId(session_id)
-        return api.json()["users"]
+
+        if show_log: print(f'\u001b[33m   Users founded : {str(len(users_data))}   \u001b[0m')
+
+        # Return correct result
+        return users_data
 
     except decoder.JSONDecodeError:
         exit('Error: rate limit')
