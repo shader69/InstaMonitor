@@ -119,6 +119,12 @@ def callFollowers(userType):
     user_id = getUserId(username)
     session_id = getSessionId()
     defFilesPaths(user_id)
+    maxUserRequested = 100
+
+    # Fill histo file in a var, for don't open file for each uses
+    global histo_data
+    if histo_data is None:
+        histo_data = readHistoFile()
 
     # Prepare 'get' variables
     cookies = {'sessionid': session_id}
@@ -232,15 +238,12 @@ def fillHistoFile(data_to_insert):
     f.close()
 
 
-# Search user data in histo file
-def searchInHistoFile(username, get_only_last_action=True, get_today_actions=False):
+# Open histo file, and prepare all data in an array
+def readHistoFile():
 
     # Return null if file not exist
     if not exists(histo_path):
         return
-
-    # Get today's date (YYYY-mm-dd)
-    today = date.today()
 
     # Open file
     f = open(histo_path, "r")
@@ -257,13 +260,43 @@ def searchInHistoFile(username, get_only_last_action=True, get_today_actions=Fal
     filedata = json.loads(file_prepared)
 
     # Loop on each histo line
-    userdata = []
-    for x in filedata:
-        if x["username"] == username:
-            userdata.append(x)
+    global_user_data = {}
+    for line in filedata:
+
+        # If data for this used hasn't already been saved
+        if not line["username"] in global_user_data:
+            global_user_data[line["username"]] = []
+
+        # Fill this user array data
+        global_user_data[line["username"]].append(line)
 
     # Close file
     f.close()
+
+    # Return prepared array
+    return global_user_data
+
+
+# Search user data in histo file
+def searchInHistoFile(username, get_only_last_action=True, get_today_actions=False):
+
+    # Return null if file not exist
+    if not exists(histo_path):
+        return
+
+    # Get today's date (YYYY-mm-dd)
+    today = date.today()
+
+    # Get file data for all users
+    global histo_data
+    filedata = histo_data
+
+    # Check if there is data for this user
+    if username not in filedata:
+        return
+
+    # Else, get user data
+    userdata = filedata[username]
 
     # Remove today's action if necessary
     if not get_today_actions:
