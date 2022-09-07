@@ -2,6 +2,8 @@ import os.path
 import json
 import argparse
 import requests
+import colorama
+colorama.init(wrap=True)
 
 from json import decoder
 from tabulate import tabulate
@@ -10,7 +12,6 @@ from os.path import exists
 
 # Prepare global variables
 mode = 'prod'
-show_color = True
 maxUserRequested = 200
 root = os.path.abspath(os.path.dirname(__file__))
 session_path = os.path.join(root, 'data/session.txt')

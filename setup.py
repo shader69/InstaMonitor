@@ -7,7 +7,7 @@ setup(
     version="1.0",
     packages=find_packages(),
     author="shader69",
-    install_requires=["requests", "argparse", "tabulate"],
+    install_requires=["requests", "argparse", "tabulate", "colorama"],
     description="ToFill",
     long_description="ToFill",
     include_package_data=True,
