@@ -13,18 +13,44 @@ mode = 'prod'
 show_color = True
 maxUserRequested = 200
 root = os.path.abspath(os.path.dirname(__file__))
-histo_path = os.path.join(root, 'histo.txt')
-user_list_path = os.path.join(root, 'users.txt')
-session_path = os.path.join(root, 'session.txt')
+session_path = os.path.join(root, 'data/session.txt')
+histo_path = None
+user_list_path = None
 
 # Check arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('-u', '--username', help="Instagram username to get data", required=False)
+parser.add_argument('-u', '--username', help="Instagram username to get data", required=True)
 parser.add_argument('-s', '--sessionid', help="Id sessions of Instagram web session", required=False)
 parser.add_argument('-m', '--mode', help="Can be 'debug' or 'prod', for show warning messages", required=False)
 
 args = parser.parse_args()
 
+# Check args
+if args.mode is not None:
+    mode = args.mode
+
+
+# Define fies paths
+def defFilesPaths(user_id):
+
+    # Create data path if not exist
+    data_path = os.path.join(root, f'data')
+    data_path_exist = os.path.exists(data_path)
+    if not data_path_exist:
+        os.makedirs(data_path)
+
+    # Create user_path if not exist
+    user_path = os.path.join(root, f'data/{user_id}')
+    user_path_exist = os.path.exists(user_path)
+    if not user_path_exist:
+        os.makedirs(user_path)
+
+    # Define files names
+    global histo_path
+    histo_path = os.path.join(root, f'data/{user_id}/histo.txt')
+
+    global user_list_path
+    user_list_path = os.path.join(root, f'data/{user_id}/users.txt')
 
 # Get user instagram name
 def getUsername():
@@ -102,11 +128,13 @@ def saveSessionId(session_id):
 # Function to return followers or following list
 def callFollowers(userType):
 
-    # Prepare 'get' variables
+    # Prepare some variables
     username = getUsername()
     user_id = getUserId(username)
     session_id = getSessionId()
+    defFilesPaths(user_id)
 
+    # Prepare 'get' variables
     cookies = {'sessionid': session_id}
     headers = {'User-Agent': 'Instagram 64.0.0.14.96'}
 

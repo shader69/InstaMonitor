@@ -1,5 +1,5 @@
 # Project files
-project/*.txt
+project/data
 
 # Python files
 build
