@@ -121,14 +121,17 @@ class Followers:
         # Convert in list, and remove \n
         return [line[:-1] for line in f.readlines()]
 
-    def api_get_followers(self, user_type):
+    def api_get_followers(self, user_type, big_data_check=True):
         """
         Call Instagram API, and Return followers or following list
         :param user_type: string, can be 'followers' or 'following'
+        :param big_data_check: bool, if true and use_list is big, we loop another time, because sometime Instagram return incorrect data
         :return: list
         """
         # Prepare some variables
-        max_followers_requested = 100
+        max_followers_requested = 100   # can't be upper to 100
+        max_query_loop_count = 10
+        max_big_data_check_loop_count = 10
         global show_log
 
         # Prepare 'get' variables
@@ -141,54 +144,77 @@ class Followers:
         elif user_type == 'following':
             url = f'https://i.instagram.com/api/v1/friendships/{self.targeted_user.user_id}/following/?count={max_followers_requested}'
         else:
-            exit(f'Error: unrecognized user type "{user_type}"')
+            exit(f'Error: unrecognized user type "{user_type}".')
 
         # Prepare data to return
         users_data = []
 
         try:
+            
+            # Prepare a first loop, to manage big data if necessary
+            big_data_loop_count = 0
+            continue_big_data_loop_continue = True
 
-            # Prepare to loop for query call
-            calling_count = 0
-            continue_loop = True
-            next_max_id = None
+            while continue_big_data_loop_continue:
 
-            while continue_loop:
+                big_data_loop_count = big_data_loop_count + 1
 
-                if show_log: print(f'\u001b[33m   Call {user_type} page n°{calling_count}   \u001b[0m')
+                # Prepare to loop for query call
+                query_loop_count = 0
+                query_loop_continue = True
+                next_max_id = None
 
-                calling_count = calling_count + 1
+                while query_loop_continue:
+    
+                    if show_log:
+                        to_print = f'\u001b[33m   '
+                        if big_data_check:
+                            to_print = to_print + f'Big data loop n°{big_data_loop_count} : '
 
-                # Get more users if necessary
-                if next_max_id is not None:
-                    current_url = url + '&max_id=' + next_max_id
+                        to_print = to_print + (f'Call {user_type} : {max_followers_requested*query_loop_count} to {max_followers_requested*(query_loop_count+1)}   \u001b[0m')
+                        print(to_print)
+
+                    query_loop_count = query_loop_count + 1
+    
+                    # Get more users if necessary
+                    if next_max_id is not None:
+                        current_url = url + '&max_id=' + next_max_id
+                    else:
+                        current_url = url
+    
+                    # Check 'get' request
+                    api = requests.get(
+                        url=current_url,
+                        headers=headers,
+                        cookies=cookies
+                    )
+    
+                    # Catch HTTP errors
+                    if api.status_code != 200:
+                        exit(f'Error: called URL return {api.status_code} error.')
+    
+                    # Check if result is null
+                    elif len(api.json()["users"]) == 0:
+                        print(f'\u001b[33mWARNING: this user has no {user_type}, or we are unable to get them.')
+                        print(f'    Please make sure that the sessionid\'s user is allowed to view wanted user content.\u001b[0m')
+
+                    # Merge user list
+                    users_data.extend(u['username'] for u in api.json()["users"] if 'username' in u)
+
+                    # Remove double data
+                    users_data = list(dict.fromkeys(users_data))
+    
+                    # If there is more users
+                    if "next_max_id" not in api.json() or query_loop_count == max_query_loop_count:
+                        query_loop_continue = False
+                    elif "next_max_id" in api.json():
+                        next_max_id = api.json()["next_max_id"]
+
+                # Check if we need to continue loop
+                if big_data_check and big_data_loop_count < len(users_data)/100 and big_data_loop_count < max_big_data_check_loop_count:
+                    continue_big_data_loop_continue = True
                 else:
-                    current_url = url
-
-                # Check 'get' request
-                api = requests.get(
-                    url=current_url,
-                    headers=headers,
-                    cookies=cookies
-                )
-
-                # Catch HTTP errors
-                if api.status_code != 200:
-                    exit(f'Error: called URL return {api.status_code} error')
-
-                # Check if result is null
-                elif len(api.json()["users"]) == 0:
-                    print(f'\u001b[33mWARNING: this user has no {user_type}, or we are unable to get them.')
-                    print(f'    Please make sure that the sessionid\'s user is allowed to view wanted user content.\u001b[0m')
-
-                # Merge user list
-                users_data.extend(api.json()["users"])
-
-                # If there is more users
-                if "next_max_id" not in api.json() or calling_count == 10:
-                    continue_loop = False
-                elif "next_max_id" in api.json():
-                    next_max_id = api.json()["next_max_id"]
+                    continue_big_data_loop_continue = False
 
             # Save session id, because maybe it's work
             self.connected_user.save_session_id()
@@ -199,4 +225,4 @@ class Followers:
             return users_data
 
         except decoder.JSONDecodeError:
-            exit('Error: rate limit, or incorrect sessionid')
+            exit('Error: rate limit, or incorrect session id. Try to refresh your session id.')

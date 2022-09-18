@@ -40,14 +40,12 @@ def main(targeted_username, connected_user_session_id=None):
     # Get followers list
     print('Get followers...')
     followers = targeted_user.followers.api_get_followers('followers')
-    followers = [d['username'] for d in followers]
 
     # Get following list
     print('Get followings...')
     followings = targeted_user.followers.api_get_followers('following')
-    followings = [d['username'] for d in followings]
 
-    # If we can get followers and followings, thrown an error
+    # If we can't get followers and followings, thrown an error
     if len(followers) == 0 and len(followings) == 0:
         exit('Error: no followers and followings have been founded. '
              'Please make sure that the sessionid\'s user is allowed to view wanted user content.')
