@@ -71,11 +71,14 @@ class TargetedUser:
 
         # If there is no args
         if arg_username is None:
-            exit("Error: you must set username by args")
+            exit("Error: you must set username by args. Use '-u' argument.")
 
-        # Else if there is argument
-        elif arg_username is not None:
-            return arg_username
+        # Else, do a special check for Instagram API
+        elif arg_username in ["username", ""]:
+            exit(f"Error: you can't search data for username '{arg_username}'.")
+
+        # If no error, return username
+        return arg_username
 
     def get_user_id(self):
         """
@@ -95,20 +98,22 @@ class TargetedUser:
         )
         try:
             # Catch HTTP errors
-            if api.status_code != 200:
-                exit(f'Error: called URL return {api.status_code} error')
-
             if api.status_code == 404:
-                exit(f'Error: user not founded')
+                exit(f'Error: user not founded.')
             elif api.status_code != 200:
-                exit(f'Error: called URL return {api.status_code} error')
+                exit(f'Error: called URL return {api.status_code} error.')
 
             # Else, return data
-            id = api.json()["logging_page_id"].strip("profilePage_")
-            return id
+            json_call = api.json()
+
+            # Check if data is returned
+            if json_call == {}:
+                exit('Error: api call return no result. Please verify username to search.')
+
+            return json_call["logging_page_id"].strip("profilePage_")
 
         except decoder.JSONDecodeError:
-            exit('Error: rate limit, or incorrect sessionid')
+            exit('Error: rate limit, or incorrect session id. Try to refresh your session id.')
 
     def set_user_name(self, user_name):
         """
