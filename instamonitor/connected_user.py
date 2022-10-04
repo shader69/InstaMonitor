@@ -1,4 +1,4 @@
-from project.globals import *
+from instamonitor.globals import *
 import os
 from os.path import exists
 

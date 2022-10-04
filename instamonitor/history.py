@@ -1,4 +1,4 @@
-from project.globals import *
+from instamonitor.globals import *
 import os.path
 import json
 from datetime import date

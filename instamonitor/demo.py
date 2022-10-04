@@ -1,4 +1,4 @@
-from project.core import *
+from instamonitor.core import *
 
 # Used this file for development only
 targeted_username = 'username'

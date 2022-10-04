@@ -1,4 +1,4 @@
-from project.core import *
+from instamonitor.core import *
 import argparse
 
 # Check arguments

@@ -1,7 +1,7 @@
-from project.globals import *
+from instamonitor.globals import *
 
-from project.connected_user import ConnectedUser
-from project.targeted_user import TargetedUser
+from instamonitor.connected_user import ConnectedUser
+from instamonitor.targeted_user import TargetedUser
 
 from tabulate import tabulate
 from datetime import date

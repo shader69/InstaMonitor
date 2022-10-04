@@ -1,9 +1,9 @@
-from project.globals import *
+from instamonitor.globals import *
 import os
 import requests
 from json import decoder
-from project.followers import Followers
-from project.history import History
+from instamonitor.followers import Followers
+from instamonitor.history import History
 
 
 class TargetedUser:

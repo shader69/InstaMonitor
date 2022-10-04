@@ -1,9 +1,9 @@
-from project.globals import *
+from instamonitor.globals import *
 import os
 from json import decoder
 from os.path import exists
 import requests
-from project.history import History
+from instamonitor.history import History
 
 
 class Followers:
