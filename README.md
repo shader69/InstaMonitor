@@ -4,26 +4,39 @@ You can see if some peoples have unfollowed your account, or if they force you t
 On each execution, the script save the results in the local file, to allow you to keep each dates for each new actions.
 
 ## 💡 Prerequisite
-[Python 3](https://www.python.org/downloads/release/python-370/)
+- [Python 3](https://www.python.org/downloads/release/python-370/)
+- [Instagram account](https://www.instagram.com/) for log in to this app
+- [Instagram account](https://www.instagram.com/) to target (can be the same one used for the connection)
 
 ## 🛠️ Installation
-### With PyPI
-
-```pip install instamonitor```
-
 ### With Github
 
 ```bash
 git clone https://github.com/shader69/instamonitor.git
 cd instamonitor/
-python3 setup.py install
+python setup.py install
 ```
 
 ## 📚 Usage:
+### Run the app in Python console
+```python
+from instamonitor.core import main
 
+# Set variables
+targeted_username = 'username'
+connected_user_session_id = None
+
+# Execute main function
+main(targeted_username, connected_user_session_id)
 ```
-instamonitor -s sessionid
+### Or in terminal
+```bash
+instamonitor -s [sessionid]
 ```
+```bash
+python instamonitor/demo.py
+```
+
 ## 📈 Example of result
 
 | Username                                      | I follow him   | He follow me   | Last check date |
